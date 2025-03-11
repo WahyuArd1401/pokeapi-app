@@ -1,101 +1,95 @@
+"use client";
+
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { Suspense } from "react";
 import Image from "next/image";
+import PokemonList from "@/components/PokemonList";
+import Jumbotron from "@/components/Jumbotron";
+
+interface Pokemon {
+  name: string;
+  url: string;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [data, setData] = useState<Pokemon[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const apiURL = process.env.NEXT_PUBLIC_POKEMON_API_URL;
+  const logoUrl = `/images/pokemon-text.png`;
+
+  const jumbotronImageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/1.png`;
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get<{ results: Pokemon[] }>(apiURL!);
+      setData(response.data.results);
+    } catch {
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const filteredPokemons = data.filter((pokemon) =>
+    pokemon.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  useEffect(() => {
+    if (apiURL) {
+      fetchData();
+    }
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-black pb-10">
+      {/* Jumbotron */}
+      <div className="bg-linear-to-r from-[#5ad531] to-[#2c9908] px-20 lg:px-40 py-5">
+        <div className="flex justify-center">
+          <Image
+            src={logoUrl}
+            alt="Logo"
+            width={300}
+            height={300}
+            objectFit="contain"
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        {!isLoading && !isError && data.length > 0 && (
+          <Jumbotron name={data[0].name} imageUrl={jumbotronImageUrl} />
+        )}
+      </div>
+      <div className="relative overflow-hidden h-10 mb-10">
+        <div className="absolute z-3 inset-x-0 bottom-0 h-20 bg-linear-to-r from-[#5ad531] to-[#2c9908] px-40 py-5 rounded-b-[50%]"></div>
+        <div className="absolute z-2 inset-x-0 bottom-0 h-20 bg-linear-to-r from-[#45a325] to-[#207105] px-40 py-5 rounded-b-[30%]"></div>
+        <div className="absolute z-1 inset-x-0 bottom-0 h-20 bg-linear-to-r from-[#32781b] to-[#185604] px-40 py-5 rounded-b-[10%]"></div>
+      </div>
+
+      <div className="flex justify-center mb-6">
+        <input
+          type="text"
+          placeholder="Search Pokémon..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-80 p-3 rounded-lg border border-gray-400 text-lg shadow-md focus:outline-none focus:border-green-500 text-white"
+        />
+      </div>
+      {/* Pokemon List */}
+      <Suspense
+        fallback={
+          <p className="text-center text-white">Loading Pokémon List...</p>
+        }
+      >
+        {filteredPokemons.length === 0 ? (
+          <p className="text-center text-white text-lg mt-5">
+            Tidak ada Pokémon yang ditemukan.
+          </p>
+        ) : (
+          <PokemonList pokemons={filteredPokemons} />
+        )}
+      </Suspense>
     </div>
   );
 }
