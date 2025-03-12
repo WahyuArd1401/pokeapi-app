@@ -18,7 +18,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
-  const apiURL = process.env.NEXT_PUBLIC_POKEMON_API_URL;
+  const apiURL = process.env.NEXT_PUBLIC_POKEMON_API_URL || `https://pokeapi.co/api/v2/pokemon?limit=10`;
   const logoUrl = `/images/pokemon-text.png`;
 
   const jumbotronImageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/1.png`;
